@@ -5,6 +5,11 @@ import com.bankoperations.bankoperations.entity.User;
 import com.bankoperations.bankoperations.repository.BankAccountRepository;
 import com.bankoperations.bankoperations.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.security.core.userdetails.UserDetails;
+//import org.springframework.security.core.userdetails.UserDetailsService;
+//import org.springframework.security.core.userdetails.UsernameNotFoundException;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,6 +18,9 @@ import java.util.List;
 @Service
 @Transactional
 public class UserService {
+
+//    @Autowired(required = false)
+//    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UserRepository userRepository;
@@ -23,6 +31,8 @@ public class UserService {
     public User createUser(User request) {
         User user = new User();
         user.setUsername(request.getUsername());
+//        String encodedPassword = passwordEncoder.encode(request.getPassword());
+//        user.setPassword(encodedPassword);
         user.setPassword(request.getPassword());
         user.setInitialDeposit(request.getInitialDeposit());
         user.setPhoneNumber(request.getPhoneNumber());
@@ -85,4 +95,5 @@ public class UserService {
         }
         return false;
     }
+
 }
