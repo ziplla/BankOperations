@@ -2,6 +2,7 @@ package com.bankoperations.bankoperations.controller;
 
 import com.bankoperations.bankoperations.entity.User;
 import com.bankoperations.bankoperations.exception.InvalidUserException;
+import com.bankoperations.bankoperations.exception.NoContactInfoException;
 import com.bankoperations.bankoperations.exception.UserNotFoundException;
 import com.bankoperations.bankoperations.model.UpdateEmailRequest;
 import com.bankoperations.bankoperations.model.UpdatePhoneRequest;
@@ -50,6 +51,24 @@ public class UserController {
         try {
             return ResponseEntity.ok(userService.updatePhoneNumber(userID, updatePhoneRequest));
         } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/deleteEmail/{userId}")
+    public ResponseEntity<?> deleteEmail(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(userService.deleteEmail(userId));
+        } catch (UserNotFoundException | NoContactInfoException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/deletePhone/{userId}")
+    public ResponseEntity<?> deletePhoneNumber(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(userService.deletePhoneNumber(userId));
+        } catch (UserNotFoundException | NoContactInfoException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

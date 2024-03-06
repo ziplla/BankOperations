@@ -161,21 +161,34 @@ public class UserService {
         }
     }
 
-    public boolean deleteContactInfo(Long userId, User request) {
+    public boolean deleteEmail(Long userId) throws UserNotFoundException, NoContactInfoException {
         User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
-            if (user.getPhoneNumber().equals(request.getPhoneNumber())) {
-                user.setPhoneNumber(null);
-                userRepository.save(user);
-                return true;
-            }
-            if (user.getEmail().equals(request.getEmail())) {
+            if (user.getPhoneNumber() != null) {
                 user.setEmail(null);
                 userRepository.save(user);
                 return true;
+            } else {
+                throw new NoContactInfoException("You can't delete all contact info");
             }
+        } else {
+            throw new UserNotFoundException("User not found");
         }
-        return false;
     }
 
+    public boolean deletePhoneNumber(Long userId) throws UserNotFoundException, NoContactInfoException {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            if (user.getEmail() != null) {
+                user.setPhoneNumber(null);
+                userRepository.save(user);
+                return true;
+            } else {
+                throw new NoContactInfoException("You can't delete all contact info");
+            }
+        } else {
+            throw new UserNotFoundException("User not found");
+        }
+    }
+    //TODO: Добавить отдельный метод для проверки существования пользователя
 }
