@@ -2,6 +2,7 @@ package com.bankoperations.bankoperations.service;
 
 import com.bankoperations.bankoperations.entity.BankAccount;
 import com.bankoperations.bankoperations.entity.User;
+import com.bankoperations.bankoperations.exception.*;
 import com.bankoperations.bankoperations.repository.BankAccountRepository;
 import com.bankoperations.bankoperations.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,17 +29,15 @@ public class UserService {
     @Autowired
     private BankAccountRepository bankAccountRepository;
 
-    public User createUser(User request) {
-        User user = new User();
-        user.setUsername(request.getUsername());
-//        String encodedPassword = passwordEncoder.encode(request.getPassword());
-//        user.setPassword(encodedPassword);
-        user.setPassword(request.getPassword());
-        user.setInitialDeposit(request.getInitialDeposit());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setEmail(request.getEmail());
-        user.setDateOfBirth(request.getDateOfBirth());
-        user.setFullName(request.getFullName());
+    public User createUser(User request) throws InvalidUserException {
+
+        try {
+            validateUser(request);
+        } catch (InvalidUserException e) {
+            throw new InvalidUserException(e.getMessage());
+        }
+
+        User user = getUser(request);
 
         BankAccount bankAccount = new BankAccount();
         bankAccount.setUser(user);
@@ -48,6 +47,78 @@ public class UserService {
         bankAccountRepository.save(bankAccount);
 
         return user;
+        //TODO: выводить вместе со счетом
+    }
+
+    private static User getUser(User request) {
+        User user = new User();
+
+        user.setUsername(request.getUsername());
+//        String encodedPassword = passwordEncoder.encode(request.getPassword());
+//        user.setPassword(encodedPassword);
+        user.setPassword(request.getPassword());
+        user.setInitialDeposit(request.getInitialDeposit());
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setUsername(request.getUsername());
+
+        user.setDateOfBirth(request.getDateOfBirth());
+        user.setFullName(request.getFullName());
+        return user;
+    }
+
+    public void validateUser(User user) throws InvalidUserException {
+        try {
+            validateInitialDeposit(user);
+        } catch (InvalidInitialDepositException e) {
+            throw new InvalidUserException(e.getMessage());
+        }
+
+        try {
+            validateUsername(user);
+        } catch (InvalidUsernameException e) {
+            throw new InvalidUserException(e.getMessage());
+        }
+
+        try {
+            validateEmail(user);
+        } catch (InvalidEmailException e) {
+            throw new InvalidUserException(e.getMessage());
+        }
+
+        try {
+            validatePhoneNumber(user);
+        } catch (InvalidPhoneNumberException e) {
+            throw new InvalidUserException(e.getMessage());
+        }
+    }
+
+    public static void validateInitialDeposit(User user) throws InvalidInitialDepositException {
+        Double balance = user.getInitialDeposit();
+        if (balance <= 0) {
+            throw new InvalidInitialDepositException("Initial deposit can't be 0 or less");
+        }
+    }
+
+    public void validateUsername(User user) throws InvalidUsernameException {
+        User checkUsername = userRepository.findByUsername(user.getUsername());
+        if (checkUsername != null) {
+            throw new InvalidUsernameException("This username is already in use");
+        }
+    }
+
+    public void validatePhoneNumber(User user) throws InvalidPhoneNumberException {
+        User checkPhoneNumber = userRepository.findByPhoneNumber(user.getPhoneNumber());
+        if (checkPhoneNumber != null) {
+            throw new InvalidPhoneNumberException("This phone number is already in use");
+        }
+    }
+
+    public void validateEmail(User user) throws InvalidEmailException {
+        User checkEmail = userRepository.findByEmail(user.getEmail());
+        if (checkEmail != null) {
+            throw new InvalidEmailException("This email is already in use");
+        }
     }
 
     public List<User> getAllUsers() {
@@ -60,8 +131,7 @@ public class UserService {
 
     public List<User> searchUsers(String dateOfBirth, String phoneNumber, String fullName, String
             email, int page, int size, String[] sort) {
-        // Здесь можно реализовать логику поиска пользователей с учетом переданных параметров
-        // В данном примере просто возвращаем всех пользователей
+        //TODO: Добавить поиск
         return userRepository.findAll();
     }
 
