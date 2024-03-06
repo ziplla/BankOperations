@@ -3,6 +3,8 @@ package com.bankoperations.bankoperations.service;
 import com.bankoperations.bankoperations.entity.BankAccount;
 import com.bankoperations.bankoperations.entity.User;
 import com.bankoperations.bankoperations.exception.*;
+import com.bankoperations.bankoperations.model.UpdateEmailRequest;
+import com.bankoperations.bankoperations.model.UpdatePhoneRequest;
 import com.bankoperations.bankoperations.repository.BankAccountRepository;
 import com.bankoperations.bankoperations.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,18 +137,28 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User updateContactInfo(Long userId, User request) {
+    public User updateEmail(Long userId, UpdateEmailRequest request) throws UserNotFoundException {
         User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
-            if (request.getPhoneNumber() != null) {
-                user.setPhoneNumber(request.getPhoneNumber());
-            }
-            if (request.getEmail() != null) {
-                user.setEmail(request.getEmail());
+            if (request.getNewEmail() != null) {
+                user.setEmail(request.getNewEmail());
             }
             return userRepository.save(user);
+        } else {
+            throw new UserNotFoundException("User not found");
         }
-        return null;
+    }
+
+    public User updatePhoneNumber(Long userId, UpdatePhoneRequest request) throws UserNotFoundException {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            if (request.getNewPhoneNumber() != null) {
+                user.setPhoneNumber(request.getNewPhoneNumber());
+            }
+            return userRepository.save(user);
+        } else {
+            throw new UserNotFoundException("User not found");
+        }
     }
 
     public boolean deleteContactInfo(Long userId, User request) {
