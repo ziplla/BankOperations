@@ -3,6 +3,7 @@ package com.bankoperations.bankoperations.service;
 import com.bankoperations.bankoperations.entity.BankAccount;
 import com.bankoperations.bankoperations.entity.User;
 import com.bankoperations.bankoperations.repository.UserRepository;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,6 +18,8 @@ public class BalanceUpdateService {
     @Autowired
     private UserRepository userRepository;
 
+    private final static Logger log = Logger.getLogger(BalanceUpdateService.class);
+
     @Scheduled(fixedRate = 60000)
     public void updateBalances() {
         List<User> users = userRepository.findAll();
@@ -29,6 +32,7 @@ public class BalanceUpdateService {
                 newBalance = initialDeposit * 2.07;
             }
             bankAccount.setBalance(newBalance);
+            log.info("Balance " + bankAccount.getId() + " increased by " + (newBalance - currentBalance));
             userRepository.save(user);
         }
     }

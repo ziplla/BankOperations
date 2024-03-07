@@ -3,6 +3,7 @@ package com.bankoperations.bankoperations.service;
 import com.bankoperations.bankoperations.dto.JwtAuthenticationResponse;
 import com.bankoperations.bankoperations.dto.SignInRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +22,8 @@ public class AuthenticationService {
     @Autowired
     private final AuthenticationManager authenticationManager;
 
+    private final static Logger log = Logger.getLogger(AuthenticationService.class);
+
     public JwtAuthenticationResponse signIn(SignInRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
                 request.getUsername(),
@@ -32,6 +35,7 @@ public class AuthenticationService {
                 .loadUserByUsername(request.getUsername());
 
         var jwt = jwtService.generateToken(user);
+        log.info("User " + request.getUsername() + " sign in");
         return new JwtAuthenticationResponse(jwt);
     }
 }

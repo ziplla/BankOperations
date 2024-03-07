@@ -7,6 +7,7 @@ import com.bankoperations.bankoperations.dto.UpdateEmailRequest;
 import com.bankoperations.bankoperations.dto.UpdatePhoneRequest;
 import com.bankoperations.bankoperations.repository.BankAccountRepository;
 import com.bankoperations.bankoperations.repository.UserRepository;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +34,8 @@ public class UserService {
 
     @Autowired
     private BankAccountRepository bankAccountRepository;
+
+    private final static Logger log = Logger.getLogger(UserService.class);
 
     public User createUser(User request) throws InvalidUserException {
 
@@ -61,6 +64,8 @@ public class UserService {
 
         user = userRepository.save(user);
         bankAccountRepository.save(bankAccount);
+
+        log.info("User with username: " + user.getUsername() + " was created");
 
         return user;
         //TODO: выводить вместе со счетом
@@ -140,16 +145,13 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId).orElse(null);
-    }
-
     public User updateEmail(Long userId, UpdateEmailRequest request) throws UserNotFoundException {
         User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
             if (request.getNewEmail() != null) {
                 user.setEmail(request.getNewEmail());
             }
+            log.info("User with ID:" + userId + " update email " + user.getEmail() + " to " + request.getNewEmail());
             return userRepository.save(user);
         } else {
             throw new UserNotFoundException("User not found");
@@ -162,6 +164,7 @@ public class UserService {
             if (request.getNewPhoneNumber() != null) {
                 user.setPhoneNumber(request.getNewPhoneNumber());
             }
+            log.info("User with ID:" + userId + " update phone " + user.getPhoneNumber() + " to " + request.getNewPhoneNumber());
             return userRepository.save(user);
         } else {
             throw new UserNotFoundException("User not found");
@@ -173,6 +176,7 @@ public class UserService {
         if (user != null) {
             if (user.getPhoneNumber() != null) {
                 user.setEmail(null);
+                log.info("User with ID:" + userId + " delete email");
                 userRepository.save(user);
                 return true;
             } else {
@@ -188,6 +192,7 @@ public class UserService {
         if (user != null) {
             if (user.getEmail() != null) {
                 user.setPhoneNumber(null);
+                log.info("User with ID:" + userId + " delete email");
                 userRepository.save(user);
                 return true;
             } else {

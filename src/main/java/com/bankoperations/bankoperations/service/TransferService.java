@@ -7,6 +7,7 @@ import com.bankoperations.bankoperations.exception.InvalidTransferException;
 import com.bankoperations.bankoperations.exception.UserNotFoundException;
 import com.bankoperations.bankoperations.repository.TransferRepository;
 import com.bankoperations.bankoperations.repository.UserRepository;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,6 +23,8 @@ public class TransferService {
 
     @Autowired
     private UserRepository userRepository;
+
+    private final static Logger log = Logger.getLogger(TransferService.class);
 
     @Transactional(propagation = Propagation.REQUIRED)
     public Transfer transferMoney(Long senderId, Long recipientId, double amount) throws InsufficientBalanceException,
@@ -57,6 +60,8 @@ public class TransferService {
         transfer.setAmount(amount);
         transfer.setTimestamp(new Date());
         transferRepository.save(transfer);
+
+        log.info("User with ID: " + senderId + " send " + amount + " to user with ID: " + recipientId);
 
         return transfer;
     }
