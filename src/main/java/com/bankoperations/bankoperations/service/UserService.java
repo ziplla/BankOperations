@@ -3,16 +3,16 @@ package com.bankoperations.bankoperations.service;
 import com.bankoperations.bankoperations.entity.BankAccount;
 import com.bankoperations.bankoperations.entity.User;
 import com.bankoperations.bankoperations.exception.*;
-import com.bankoperations.bankoperations.model.UpdateEmailRequest;
-import com.bankoperations.bankoperations.model.UpdatePhoneRequest;
+import com.bankoperations.bankoperations.dto.UpdateEmailRequest;
+import com.bankoperations.bankoperations.dto.UpdatePhoneRequest;
 import com.bankoperations.bankoperations.repository.BankAccountRepository;
 import com.bankoperations.bankoperations.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.security.core.userdetails.UserDetails;
-//import org.springframework.security.core.userdetails.UserDetailsService;
-//import org.springframework.security.core.userdetails.UsernameNotFoundException;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-//import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -25,8 +25,8 @@ import java.util.List;
 @Transactional
 public class UserService {
 
-//    @Autowired(required = false)
-//    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private UserRepository userRepository;
@@ -42,7 +42,18 @@ public class UserService {
             throw new InvalidUserException(e.getMessage());
         }
 
-        User user = getUser(request);
+        User user = new User();
+
+        user.setUsername(request.getUsername());
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        user.setPassword(encodedPassword);
+        user.setInitialDeposit(request.getInitialDeposit());
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setUsername(request.getUsername());
+
+        user.setDateOfBirth(request.getDateOfBirth());
+        user.setFullName(request.getFullName());
 
         BankAccount bankAccount = new BankAccount();
         bankAccount.setUser(user);
@@ -55,13 +66,12 @@ public class UserService {
         //TODO: выводить вместе со счетом
     }
 
-    private static User getUser(User request) {
+    /*private static User getUser(User request) {
         User user = new User();
 
         user.setUsername(request.getUsername());
-//        String encodedPassword = passwordEncoder.encode(request.getPassword());
-//        user.setPassword(encodedPassword);
-        user.setPassword(request.getPassword());
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        user.setPassword(encodedPassword);
         user.setInitialDeposit(request.getInitialDeposit());
         user.setEmail(request.getEmail());
         user.setPhoneNumber(request.getPhoneNumber());
@@ -70,7 +80,7 @@ public class UserService {
         user.setDateOfBirth(request.getDateOfBirth());
         user.setFullName(request.getFullName());
         return user;
-    }
+    }*/
 
     public void validateUser(User user) throws InvalidUserException {
         try {
@@ -213,5 +223,35 @@ public class UserService {
 
         return userRepository.findAll(specification, pageable).getContent();
     }
+
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+                try {
+                    return getByUsername(username);
+                } catch (UserNotFoundException e) {
+                    throw new UsernameNotFoundException("User not found", e);
+                }
+            }
+        };
+    }
+
+
+    public User getByUsername(String username) throws UserNotFoundException {
+
+        User user = userRepository.findByUsername(username);
+
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
+        }
+        return user;
+    }
+
+    public User getCurrentUser() throws UserNotFoundException {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return getByUsername(username);
+    }
+
 
 }
