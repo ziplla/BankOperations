@@ -213,5 +213,5 @@ public class UserService {
 
         return userRepository.findAll(specification, pageable).getContent();
     }
-    //TODO: Добавить отдельный метод для проверки существования пользователя
+
 }
