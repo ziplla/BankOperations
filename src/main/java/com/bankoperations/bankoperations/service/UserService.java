@@ -68,24 +68,8 @@ public class UserService {
         log.info("User with username: " + user.getUsername() + " was created");
 
         return user;
-        //TODO: выводить вместе со счетом
+
     }
-
-    /*private static User getUser(User request) {
-        User user = new User();
-
-        user.setUsername(request.getUsername());
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
-        user.setPassword(encodedPassword);
-        user.setInitialDeposit(request.getInitialDeposit());
-        user.setEmail(request.getEmail());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setUsername(request.getUsername());
-
-        user.setDateOfBirth(request.getDateOfBirth());
-        user.setFullName(request.getFullName());
-        return user;
-    }*/
 
     public void validateUser(User user) throws InvalidUserException {
         try {
