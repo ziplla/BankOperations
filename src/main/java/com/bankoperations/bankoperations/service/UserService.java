@@ -13,9 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.security.core.userdetails.UsernameNotFoundException;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 //import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -131,12 +134,6 @@ public class UserService {
         return userRepository.findById(userId).orElse(null);
     }
 
-    public List<User> searchUsers(String dateOfBirth, String phoneNumber, String fullName, String
-            email, int page, int size, String[] sort) {
-        //TODO: Добавить поиск
-        return userRepository.findAll();
-    }
-
     public User updateEmail(Long userId, UpdateEmailRequest request) throws UserNotFoundException {
         User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
@@ -189,6 +186,32 @@ public class UserService {
         } else {
             throw new UserNotFoundException("User not found");
         }
+    }
+
+    public List<Object> searchUsers(String fullName, String email, String phoneNumber, Date dateOfBirth, Pageable pageable) {
+        Specification<User> specification = Specification.where(null);
+
+        if (fullName != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(root.get("fullName"), fullName + "%"));
+        }
+
+        if (email != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("email"), email));
+        }
+
+        if (phoneNumber != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("phoneNumber"), phoneNumber));
+        }
+
+        if (dateOfBirth != null) {
+            specification = specification.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.greaterThan(root.get("dateOfBirth"), dateOfBirth));
+        }
+
+        return userRepository.findAll(specification, pageable).getContent();
     }
     //TODO: Добавить отдельный метод для проверки существования пользователя
 }
